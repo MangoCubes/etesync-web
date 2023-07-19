@@ -113,6 +113,22 @@ export async function itemSave(etebase: Etebase.Account, collection: Etebase.Col
   await asyncDispatch(itemBatch(collection, itemMgr, [eteItem]));
 }
 
+export async function createMultipleItems(etebase: Etebase.Account, collection: Etebase.Collection, items: PimType[]): Promise<void> {
+  const colMgr = getCollectionManager(etebase);
+  const itemMgr = colMgr.getItemManager(collection);
+  const eteItems = [];
+  const mtime = (new Date()).getTime();
+  for(const item of items) {
+    const content = item.toIcal();
+    const meta: Etebase.ItemMetadata = {
+      mtime,
+      name: item.uid,
+    };
+    eteItems.push(await itemMgr.create(meta, content));
+  }
+  await asyncDispatch(itemBatch(collection, itemMgr, eteItems));
+}
+
 export async function itemDelete(etebase: Etebase.Account, collection: Etebase.Collection, items: Map<string, Map<string, Etebase.Item>>, item: PimType, collectionUid: string) {
   const itemUid = item.itemUid!;
   const colMgr = getCollectionManager(etebase);
