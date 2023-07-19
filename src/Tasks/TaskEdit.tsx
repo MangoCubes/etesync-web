@@ -416,6 +416,7 @@ export default class TaskEdit extends React.PureComponent<PropsType> {
                   <IconButton
                     edge="end"
                     onClick={this.onSubtaskAdd}
+                    disabled={this.state.tempSubtask === ""}
                   >
                     <IconAdd />
                   </IconButton>
