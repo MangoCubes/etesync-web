@@ -20,6 +20,7 @@ import RadioGroup from "@material-ui/core/RadioGroup";
 
 import Autocomplete from "@material-ui/lab/Autocomplete";
 
+import IconAdd from "@material-ui/icons/Add";
 import IconDelete from "@material-ui/icons/Delete";
 import IconCancel from "@material-ui/icons/Clear";
 import IconSave from "@material-ui/icons/Save";
@@ -42,7 +43,7 @@ import { History } from "history";
 import ColoredRadio from "../widgets/ColoredRadio";
 import RRule, { RRuleOptions } from "../widgets/RRule";
 import { CachedCollection } from "../Pim/helpers";
-import { ListItem, ListItemText } from "@material-ui/core";
+import { IconButton, InputAdornment, List, ListItem, ListItemText, OutlinedInput } from "@material-ui/core";
 
 interface PropsType {
   collections: CachedCollection[];
@@ -140,6 +141,7 @@ export default class TaskEdit extends React.PureComponent<PropsType> {
     this.handleRRuleChange = this.handleRRuleChange.bind(this);
     this.onDeleteRequest = this.onDeleteRequest.bind(this);
     this.handleCloseToast = this.handleCloseToast.bind(this);
+    this.onSubtaskAdd = this.onSubtaskAdd.bind(this);
   }
 
   public handleChange(name: string, value: string | number | string[]) {
@@ -147,6 +149,14 @@ export default class TaskEdit extends React.PureComponent<PropsType> {
       [name]: value,
     });
 
+  }
+
+  public onSubtaskAdd() {
+    const newTaskList = [...this.state.subtasks, this.state.tempSubtask];
+    this.setState({
+      subtasks: newTaskList,
+      tempSubtask: "",
+    });
   }
 
   public handleInputChange(event: React.ChangeEvent<any>) {
@@ -358,26 +368,39 @@ export default class TaskEdit extends React.PureComponent<PropsType> {
             </RadioGroup>
           </FormControl>
 
-          {
-            this.state.subtasks.forEach((taskName) => {
-              return (
-                <ListItem>
-                  <ListItemText>
-                    {taskName}
-                  </ListItemText>
-                </ListItem>
-              );
-            })
-          }
-          
-          <TextField
-            name="tempSubtask"
-            label="Add a new subtask"
-            variant="outlined"
-            fullWidth
-            value={this.state.tempSubtask}
-            onChange={this.handleInputChange}
-          />
+          <List dense>
+            {
+              this.state.subtasks.map((taskName, index) => {
+                return (
+                  <ListItem key={`subtask_${index}`}>
+                    <ListItemText>
+                      {taskName}
+                    </ListItemText>
+                  </ListItem>
+                );
+              })
+            }
+          </List>
+
+          <FormControl style={styles.fullWidth} variant="outlined">
+            <InputLabel>Add a new subtask</InputLabel>
+            <OutlinedInput
+              name="tempSubtask"
+              value={this.state.tempSubtask}
+              onChange={this.handleInputChange}
+              endAdornment={
+                <InputAdornment position="end">
+                  <IconButton
+                    edge="end"
+                    onClick={this.onSubtaskAdd}
+                  >
+                    <IconAdd />
+                  </IconButton>
+                </InputAdornment>
+              }
+              label="Add a new subtask"
+            />
+          </FormControl>
 
           <FormControl style={styles.fullWidth}>
             <FormHelperText>Hide until</FormHelperText>
