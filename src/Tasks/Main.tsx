@@ -10,7 +10,7 @@ import { Button, useTheme } from "@material-ui/core";
 import IconEdit from "@material-ui/icons/Edit";
 import IconChangeHistory from "@material-ui/icons/ChangeHistory";
 
-import { TaskType, PimType } from "../pim-types";
+import { TaskType, PimType, PimChanges } from "../pim-types";
 import { useCredentials } from "../credentials";
 import { useItems, useCollections } from "../etebase-helpers";
 import { routeResolver } from "../App";
@@ -57,13 +57,15 @@ export default function TasksMain() {
   }
 
   async function onItemSave(item: PimType, collectionUid: string, originalItem?: PimType): Promise<void> {
+    await onMultipleItemsSave([{
+      original: originalItem,
+      new: item,
+    }], collectionUid);
+  }
+
+  async function onMultipleItemsSave(changes: PimChanges[], collectionUid: string): Promise<void> {
     const collection = collections!.find((x) => x.uid === collectionUid)!;
-    await itemSave(etebase, collection, items!, collectionUid,
-      [{
-        original: originalItem,
-        new: item,
-      }]
-    );
+    await itemSave(etebase, collection, items!, collectionUid, changes);
   }
 
   async function onItemDelete(item: PimType, collectionUid: string) {
@@ -119,7 +121,7 @@ export default function TasksMain() {
       >
         <TaskEdit
           collections={cachedCollections}
-          onSave={onItemSave}
+          onSave={onMultipleItemsSave}
           onDelete={onItemDelete}
           onCancel={onCancel}
           history={history}
@@ -163,7 +165,7 @@ export default function TasksMain() {
                   initialCollection={item.collectionUid}
                   item={item}
                   collections={cachedCollections}
-                  onSave={onItemSave}
+                  onSave={onMultipleItemsSave}
                   onDelete={onItemDelete}
                   onCancel={onCancel}
                   history={history}
