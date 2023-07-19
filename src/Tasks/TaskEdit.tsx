@@ -43,7 +43,7 @@ import { History } from "history";
 import ColoredRadio from "../widgets/ColoredRadio";
 import RRule, { RRuleOptions } from "../widgets/RRule";
 import { CachedCollection } from "../Pim/helpers";
-import { IconButton, InputAdornment, List, ListItem, ListItemSecondaryAction, ListItemText, OutlinedInput } from "@material-ui/core";
+import { Checkbox, IconButton, InputAdornment, List, ListItem, ListItemSecondaryAction, ListItemText, OutlinedInput } from "@material-ui/core";
 
 interface PropsType {
   collections: CachedCollection[];
@@ -51,7 +51,7 @@ interface PropsType {
   initialCollection?: string;
   item?: TaskType;
   onSave: (changes: PimChanges[], collectionUid: string) => Promise<void>;
-  onDelete: (item: TaskType, collectionUid: string, redirect?: boolean) => Promise<void>;
+  onDelete: (item: TaskType, collectionUid: string, redirect?: boolean, recursive?: boolean) => Promise<void>;
   onCancel: () => void;
   history: History<any>;
 }
@@ -90,6 +90,11 @@ export default class TaskEdit extends React.PureComponent<PropsType> {
      * be used for submitting form, or for adding a new subtask.
      */
     creatingSubtasks: boolean;
+    /**
+     * Used exclusively for the delete dialog box, if this is checked, this task and all of its
+     * children are deleted in a recursive manner.
+     */
+    recursiveDelete: boolean;
 
     error?: string;
     showDeleteDialog: boolean;
@@ -110,6 +115,7 @@ export default class TaskEdit extends React.PureComponent<PropsType> {
       tags: [],
       timezone: null,
       creatingSubtasks: false,
+      recursiveDelete: false,
 
       collectionUid: "",
       showDeleteDialog: false,
@@ -314,7 +320,9 @@ export default class TaskEdit extends React.PureComponent<PropsType> {
 
   public onDeleteRequest() {
     this.setState({
+      deleteTarget: undefined,
       showDeleteDialog: true,
+      recursiveDelete: false,
     });
   }
 
@@ -323,7 +331,8 @@ export default class TaskEdit extends React.PureComponent<PropsType> {
     await this.props.onDelete(
       this.state.deleteTarget ?? this.props.item!,
       this.props.initialCollection!,
-      redirect
+      redirect,
+      this.state.recursiveDelete
     );
     if (!redirect) {
       this.setState({ showDeleteDialog: false });
@@ -456,6 +465,7 @@ export default class TaskEdit extends React.PureComponent<PropsType> {
                         this.setState({
                           showDeleteDialog: true,
                           deleteTarget: task,
+                          recursiveDelete: false,
                         });
                       }}>
                         <IconDelete />
@@ -628,6 +638,17 @@ export default class TaskEdit extends React.PureComponent<PropsType> {
           {
             this.state.deleteTarget ? ` "${this.state.deleteTarget.summary}"` : " this task"
           }?
+          {!this.state.deleteTarget &&
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={this.state.recursiveDelete}
+                  onChange={(e) => this.setState({ recursiveDelete: e.target.checked })}
+                />
+              }
+              label="Delete recursively"
+            />
+          }
         </ConfirmationDialog>
       </React.Fragment>
     );
