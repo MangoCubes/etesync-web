@@ -43,7 +43,7 @@ import { History } from "history";
 import ColoredRadio from "../widgets/ColoredRadio";
 import RRule, { RRuleOptions } from "../widgets/RRule";
 import { CachedCollection } from "../Pim/helpers";
-import { IconButton, InputAdornment, List, ListItem, ListItemText, OutlinedInput } from "@material-ui/core";
+import { IconButton, InputAdornment, List, ListItem, ListItemSecondaryAction, ListItemText, OutlinedInput } from "@material-ui/core";
 
 interface PropsType {
   collections: CachedCollection[];
@@ -73,6 +73,13 @@ export default class TaskEdit extends React.PureComponent<PropsType> {
     description: string;
     tags: string[];
     collectionUid: string;
+    /**
+     * If `deleteTarget` is not defined, this indicates that when the confirmation button
+     * in the delete dialog is pressed, the current task is deleted.
+     * When this value is set to a given `TaskType`, the specified task will be deleted.
+     * This is used when deleting subtask. 
+     */
+    deleteTarget?: TaskType;
 
     error?: string;
     showDeleteDialog: boolean;
@@ -385,31 +392,6 @@ export default class TaskEdit extends React.PureComponent<PropsType> {
             </RadioGroup>
           </FormControl>
 
-          <List dense>
-            {
-              this.props.directChildren.map((task) => {
-                return (
-                  <ListItem key={`subtask_${task.uid}`}>
-                    <ListItemText>
-                      {task.summary}
-                    </ListItemText>
-                  </ListItem>
-                );
-              })
-            }
-            {
-              this.state.subtasks.map((taskName, index) => {
-                return (
-                  <ListItem key={`subtask_${index}`}>
-                    <ListItemText>
-                      {taskName}
-                    </ListItemText>
-                  </ListItem>
-                );
-              })
-            }
-          </List>
-
           <FormControl style={styles.fullWidth} variant="outlined">
             <InputLabel>Add a new subtask</InputLabel>
             <OutlinedInput
@@ -429,6 +411,45 @@ export default class TaskEdit extends React.PureComponent<PropsType> {
               label="Add a new subtask"
             />
           </FormControl>
+
+          <List dense>
+            {
+              this.props.directChildren.map((task) => {
+                return (
+                  <ListItem key={`subtask_${task.uid}`}>
+                    <ListItemText>
+                      {task.summary}
+                    </ListItemText>
+                    <ListItemSecondaryAction>
+                      <IconButton>
+                        <IconDelete />
+                      </IconButton>
+                    </ListItemSecondaryAction>
+                  </ListItem>
+                );
+              })
+            }
+            {
+              this.state.subtasks.map((taskName, index) => {
+                return (
+                  <ListItem key={`subtask_${index}`}>
+                    <ListItemText>
+                      {taskName}
+                    </ListItemText>
+                    <ListItemSecondaryAction>
+                      <IconButton onClick={() => {
+                        const copy = [...this.state.subtasks];
+                        copy.splice(index, 1);
+                        this.setState({ subtasks: copy });
+                      }}>
+                        <IconDelete />
+                      </IconButton>
+                    </ListItemSecondaryAction>
+                  </ListItem>
+                );
+              })
+            }
+          </List>
 
           <FormControl style={styles.fullWidth}>
             <FormHelperText>Hide until</FormHelperText>
@@ -564,10 +585,13 @@ export default class TaskEdit extends React.PureComponent<PropsType> {
           title="Delete Confirmation"
           labelOk="Delete"
           open={this.state.showDeleteDialog}
-          onOk={() => this.props.onDelete(this.props.item!, this.props.initialCollection!)}
+          onOk={() => this.props.onDelete(this.state.deleteTarget ?? this.props.item!, this.props.initialCollection!)}
           onCancel={() => this.setState({ showDeleteDialog: false })}
         >
-          Are you sure you would like to delete this task?
+          Are you sure you would like to delete
+          {
+            this.state.deleteTarget ? ` "${this.state.deleteTarget.summary}"` : " this task"
+          }?
         </ConfirmationDialog>
       </React.Fragment>
     );
