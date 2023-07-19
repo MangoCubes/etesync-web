@@ -42,6 +42,7 @@ import { History } from "history";
 import ColoredRadio from "../widgets/ColoredRadio";
 import RRule, { RRuleOptions } from "../widgets/RRule";
 import { CachedCollection } from "../Pim/helpers";
+import { ListItem, ListItemText } from "@material-ui/core";
 
 interface PropsType {
   collections: CachedCollection[];
@@ -59,6 +60,8 @@ export default class TaskEdit extends React.PureComponent<PropsType> {
     title: string;
     status: TaskStatusType;
     priority: TaskPriorityType;
+    subtasks: string[];
+    tempSubtask: string;
     includeTime: boolean;
     start?: Date;
     due?: Date;
@@ -80,6 +83,8 @@ export default class TaskEdit extends React.PureComponent<PropsType> {
       title: "",
       status: TaskStatusType.NeedsAction,
       priority: TaskPriorityType.Undefined,
+      subtasks: [],
+      tempSubtask: "",
       includeTime: false,
       location: "",
       description: "",
@@ -352,6 +357,27 @@ export default class TaskEdit extends React.PureComponent<PropsType> {
               <ColoredRadio value={TaskPriorityType.High} label="High" color={colors.red[600]} />
             </RadioGroup>
           </FormControl>
+
+          {
+            this.state.subtasks.forEach((taskName) => {
+              return (
+                <ListItem>
+                  <ListItemText>
+                    {taskName}
+                  </ListItemText>
+                </ListItem>
+              );
+            })
+          }
+          
+          <TextField
+            name="tempSubtask"
+            label="Add a new subtask"
+            variant="outlined"
+            fullWidth
+            value={this.state.tempSubtask}
+            onChange={this.handleInputChange}
+          />
 
           <FormControl style={styles.fullWidth}>
             <FormHelperText>Hide until</FormHelperText>
