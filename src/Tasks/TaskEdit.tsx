@@ -62,6 +62,10 @@ export default class TaskEdit extends React.PureComponent<PropsType> {
     title: string;
     status: TaskStatusType;
     priority: TaskPriorityType;
+    /**
+     * List of newly created subtasks go here. This list does NOT include tasks that are already
+     * online, only the ones that are currently queued for creation.
+     */
     subtasks: string[];
     tempSubtask: string;
     includeTime: boolean;
@@ -80,6 +84,12 @@ export default class TaskEdit extends React.PureComponent<PropsType> {
      * This is used when deleting subtask. 
      */
     deleteTarget?: TaskType;
+    /**
+     * If the user's currently focusing on the subtask form, this will become true, and false if not.
+     * This is used so that when user presses enter, the page can determine whether this enter should
+     * be used for submitting form, or for adding a new subtask.
+     */
+    creatingSubtasks: boolean;
 
     error?: string;
     showDeleteDialog: boolean;
@@ -99,6 +109,7 @@ export default class TaskEdit extends React.PureComponent<PropsType> {
       description: "",
       tags: [],
       timezone: null,
+      creatingSubtasks: false,
 
       collectionUid: "",
       showDeleteDialog: false,
@@ -197,6 +208,10 @@ export default class TaskEdit extends React.PureComponent<PropsType> {
 
   public onSubmit(e: React.FormEvent<any>) {
     e.preventDefault();
+    if (this.state.creatingSubtasks) {
+      this.onSubtaskAdd();
+      return;
+    }
 
     if (this.state.rrule && !(this.state.start || this.state.due)) {
       this.setState({ error: "A recurring task must have either Hide Until or Due Date set!" });
@@ -411,6 +426,8 @@ export default class TaskEdit extends React.PureComponent<PropsType> {
               name="tempSubtask"
               value={this.state.tempSubtask}
               onChange={this.handleInputChange}
+              onFocus={() => this.setState({ creatingSubtasks: true })}
+              onBlur={() => this.setState({ creatingSubtasks: false })}
               endAdornment={
                 <InputAdornment position="end">
                   <IconButton
