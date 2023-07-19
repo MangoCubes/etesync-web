@@ -58,7 +58,12 @@ export default function TasksMain() {
 
   async function onItemSave(item: PimType, collectionUid: string, originalItem?: PimType): Promise<void> {
     const collection = collections!.find((x) => x.uid === collectionUid)!;
-    await itemSave(etebase, collection, items!, item, collectionUid, originalItem);
+    await itemSave(etebase, collection, items!, collectionUid,
+      [{
+        original: originalItem,
+        new: item,
+      }]
+    );
   }
 
   async function onItemDelete(item: PimType, collectionUid: string) {
