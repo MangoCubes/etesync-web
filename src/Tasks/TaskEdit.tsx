@@ -254,8 +254,24 @@ export default class TaskEdit extends React.PureComponent<PropsType> {
     }
 
     task.component.updatePropertyWithValue("last-modified", ICAL.Time.now());
+    
+    const tasks: PimChanges[] = [
+      ...this.state.subtasks.map((item) => {
+        const subtask = new TaskType(null);
+        subtask.uid = uuid.v4();
+        subtask.summary = item;
+        subtask.relatedTo = task.uid;
+        return {
+          new: subtask,
+        };
+      }),
+      {
+        new: task,
+        original: this.props.item,
+      },
+    ];
 
-    this.props.onSave([{ new: task, original: this.props.item }], this.state.collectionUid)
+    this.props.onSave(tasks, this.state.collectionUid)
       .then(() => {
         const nextTask = task.finished && task.getNextOccurence();
         if (nextTask) {
