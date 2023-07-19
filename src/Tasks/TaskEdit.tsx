@@ -47,6 +47,7 @@ import { IconButton, InputAdornment, List, ListItem, ListItemText, OutlinedInput
 
 interface PropsType {
   collections: CachedCollection[];
+  directChildren: TaskType[];
   initialCollection?: string;
   item?: TaskType;
   onSave: (changes: PimChanges[], collectionUid: string) => Promise<void>;
@@ -385,6 +386,17 @@ export default class TaskEdit extends React.PureComponent<PropsType> {
           </FormControl>
 
           <List dense>
+            {
+              this.props.directChildren.map((task) => {
+                return (
+                  <ListItem key={`subtask_${task.uid}`}>
+                    <ListItemText>
+                      {task.summary}
+                    </ListItemText>
+                  </ListItem>
+                );
+              })
+            }
             {
               this.state.subtasks.map((taskName, index) => {
                 return (
