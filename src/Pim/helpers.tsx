@@ -114,19 +114,23 @@ export async function itemSave(etebase: Etebase.Account, collection: Etebase.Col
   await asyncDispatch(itemBatch(collection, itemMgr, itemList));
 }
 
-export async function itemDelete(etebase: Etebase.Account, collection: Etebase.Collection, items: Map<string, Map<string, Etebase.Item>>, item: PimType, collectionUid: string) {
-  const itemUid = item.itemUid!;
+export async function itemDelete(etebase: Etebase.Account, collection: Etebase.Collection, items: Map<string, Map<string, Etebase.Item>>, itemsToDelete: PimType[], collectionUid: string) {
   const colMgr = getCollectionManager(etebase);
   const itemMgr = colMgr.getItemManager(collection);
+  const itemList = [];
+  for (const item of itemsToDelete) {
+    const itemUid = item.itemUid!;
+    const eteItem = items!.get(collectionUid)?.get(itemUid)!;
+    const mtime = (new Date()).getTime();
+    const meta = eteItem.getMeta();
+    meta.mtime = mtime;
+    eteItem.setMeta(meta);
+    eteItem.delete(true);
+    itemList.push(eteItem);
+  }
+  
 
-  const eteItem = items!.get(collectionUid)?.get(itemUid)!;
-  const mtime = (new Date()).getTime();
-  const meta = eteItem.getMeta();
-  meta.mtime = mtime;
-  eteItem.setMeta(meta);
-  eteItem.delete(true);
-
-  await asyncDispatch(itemBatch(collection, itemMgr, [eteItem]));
+  await asyncDispatch(itemBatch(collection, itemMgr, itemList));
 }
 
 interface PimFabPropsType {

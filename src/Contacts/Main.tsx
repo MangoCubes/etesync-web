@@ -69,7 +69,7 @@ export default function ContactsMain() {
 
   async function onItemDelete(item: PimType, collectionUid: string) {
     const collection = collections!.find((x) => x.uid === collectionUid)!;
-    await itemDelete(etebase, collection, items!, item, collectionUid);
+    await itemDelete(etebase, collection, items!, [item], collectionUid);
 
     history.push(routeResolver.getRoute("pim.contacts"));
   }
