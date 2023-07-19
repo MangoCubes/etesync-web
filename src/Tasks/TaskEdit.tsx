@@ -51,7 +51,7 @@ interface PropsType {
   initialCollection?: string;
   item?: TaskType;
   onSave: (changes: PimChanges[], collectionUid: string) => Promise<void>;
-  onDelete: (item: TaskType, collectionUid: string) => void;
+  onDelete: (item: TaskType, collectionUid: string, redirect?: boolean) => Promise<void>;
   onCancel: () => void;
   history: History<any>;
 }
@@ -150,6 +150,7 @@ export default class TaskEdit extends React.PureComponent<PropsType> {
     this.onDeleteRequest = this.onDeleteRequest.bind(this);
     this.handleCloseToast = this.handleCloseToast.bind(this);
     this.onSubtaskAdd = this.onSubtaskAdd.bind(this);
+    this.onOk = this.onOk.bind(this);
   }
 
   public handleChange(name: string, value: string | number | string[]) {
@@ -302,6 +303,18 @@ export default class TaskEdit extends React.PureComponent<PropsType> {
     });
   }
 
+  public async onOk() {
+    const redirect = !this.state.deleteTarget;
+    await this.props.onDelete(
+      this.state.deleteTarget ?? this.props.item!,
+      this.props.initialCollection!,
+      redirect
+    );
+    if (!redirect) {
+      this.setState({ showDeleteDialog: false });
+    }
+  }
+
   public render() {
     const styles = {
       form: {
@@ -421,7 +434,12 @@ export default class TaskEdit extends React.PureComponent<PropsType> {
                       {task.summary}
                     </ListItemText>
                     <ListItemSecondaryAction>
-                      <IconButton>
+                      <IconButton onClick={() => {
+                        this.setState({
+                          showDeleteDialog: true,
+                          deleteTarget: task,
+                        });
+                      }}>
                         <IconDelete />
                       </IconButton>
                     </ListItemSecondaryAction>
@@ -585,7 +603,7 @@ export default class TaskEdit extends React.PureComponent<PropsType> {
           title="Delete Confirmation"
           labelOk="Delete"
           open={this.state.showDeleteDialog}
-          onOk={() => this.props.onDelete(this.state.deleteTarget ?? this.props.item!, this.props.initialCollection!)}
+          onOk={this.onOk}
           onCancel={() => this.setState({ showDeleteDialog: false })}
         >
           Are you sure you would like to delete
