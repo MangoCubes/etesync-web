@@ -638,17 +638,15 @@ export default class TaskEdit extends React.PureComponent<PropsType> {
           {
             this.state.deleteTarget ? ` "${this.state.deleteTarget.summary}"` : " this task"
           }?
-          {!this.state.deleteTarget &&
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={this.state.recursiveDelete}
-                  onChange={(e) => this.setState({ recursiveDelete: e.target.checked })}
-                />
-              }
-              label="Delete recursively"
-            />
-          }
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={this.state.recursiveDelete}
+                onChange={(e) => this.setState({ recursiveDelete: e.target.checked })}
+              />
+            }
+            label="Delete recursively"
+          />
         </ConfirmationDialog>
       </React.Fragment>
     );
